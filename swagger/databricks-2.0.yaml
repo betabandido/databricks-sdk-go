@@ -1,0 +1,144 @@
+swagger: "2.0"
+info:
+  version: 0.0.1
+  title: Databricks
+consumes:
+  - application/json
+products:
+  - application/json
+paths: {}
+definitions:
+  ### Workspace ###
+  # Requests and responses
+  WorkspaceDeleteRequest:
+    required:
+      - path
+    properties:
+      path:
+        type: string
+      recursive:
+        type: boolean
+  WorkspaceExportRequest:
+    required:
+      - path
+    properties:
+      path:
+        type: string
+      format:
+        $ref: '#/definitions/WorkspaceExportFormat'
+      direct_download:
+        type: boolean
+  WorkspaceExportResponse:
+    properties:
+      content:
+        type: string
+        format: byte
+  WorkspaceGetStatusRequest:
+    required:
+      - path
+    properties:
+      path:
+        type: string
+  WorkspaceGetStatusResponse:
+    properties:
+      object_type:
+        $ref: '#/definitions/WorkspaceObjectType'
+      path:
+        type: string
+      language:
+        $ref: '#/definitions/WorkspaceLanguage'
+  WorkspaceImportRequest:
+    required:
+      - path
+    properties:
+      path:
+        type: string
+      format:
+        $ref: '#/definitions/WorkspaceExportFormat'
+      language:
+        $ref: '#/definitions/WorkspaceLanguage'
+      content:
+        type: string
+        format: byte
+      overwrite:
+        type: boolean
+  # Data objects
+  WorkspaceObjectType:
+    type: string
+    default: NOTEBOOK
+    enum:
+      - NOTEBOOK
+      - DIRECTORY
+      - LIBRARY
+  WorkspaceExportFormat:
+    type: string
+    default: SOURCE
+    enum:
+      - SOURCE
+      - HTML
+      - JUPYTER
+      - DBC    
+  WorkspaceLanguage:
+    type: string
+    default: SCALA
+    enum:
+      - SCALA
+      - PYTHON
+      - SQL
+      - R    
+  WorkspaceObject:
+    required:
+      - path
+      - object_type
+    properties:
+      path:
+        type: string
+      language:
+        $ref: '#/definitions/WorkspaceLanguage'
+      object_type:
+        $ref: '#/definitions/WorkspaceObjectType'
+  ### Jobs ###        
+  JobSpec:
+    properties:
+      name:
+        type: string
+      new_cluster:
+        $ref: '#/definitions/NewCluster'
+      notebook_task:
+        $ref: '#/definitions/NotebookTask'
+  NewCluster:
+    required:
+      - spark_version
+      - node_type_id
+    properties:
+      num_workers:
+        type: integer
+        format: int32
+      cluster_name:
+        type: string
+      spark_version:
+        type: string
+      node_type_id:
+        type: string            
+  NotebookTask:
+    required:
+      - notebook_path
+    properties:
+      notebook_path:
+        type: string
+      base_parameters:
+        type: array
+        items:
+          type: object
+          additionalProperties:
+            type: string        
+  ### Errors ###
+  ErrorResponse:
+    required:
+      - error_code
+      - message
+    properties:
+      error_code:
+        type: string
+      message:
+        type: string
