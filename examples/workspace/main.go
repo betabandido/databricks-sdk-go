@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/betabandido/databricks-sdk-go/api/workspace"
 	"github.com/betabandido/databricks-sdk-go/client"
@@ -11,9 +12,13 @@ import (
 )
 
 func main() {
+	flag.Parse() // required to suppress warnings from glog
+
 	secrets := loadSecrets()
 
-	cl, err := client.NewClient(secrets.Domain, secrets.Token)
+	cl, err := client.NewClient(client.Options{
+		Domain: &secrets.Domain, Token: &secrets.Token,
+	})
 	if err != nil {
 		panic(err)
 	}

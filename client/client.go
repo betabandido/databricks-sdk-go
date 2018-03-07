@@ -9,8 +9,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
+
+type Options struct {
+	Domain *string
+	Token  *string
+}
 
 type Client struct {
 	http    *http.Client
@@ -18,14 +24,20 @@ type Client struct {
 	header  http.Header
 }
 
-func NewClient(domain string, token string) (*Client, error) {
-	baseUrl, err := url.Parse(fmt.Sprintf("https://%s/api/2.0/", domain))
+func NewClient(opts Options) (*Client, error) {
+	loadEnvConfig(&opts)
+
+	if opts.Domain == nil || opts.Token == nil {
+		return nil, fmt.Errorf("missing credentials")
+	}
+
+	baseUrl, err := url.Parse(fmt.Sprintf("https://%s/api/2.0/", *opts.Domain))
 	if err != nil {
 		panic(err)
 	}
 
 	header := http.Header{}
-	header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	header.Add("Authorization", fmt.Sprintf("Bearer %s", *opts.Token))
 
 	client := Client{
 		http: &http.Client{
@@ -36,6 +48,20 @@ func NewClient(domain string, token string) (*Client, error) {
 	}
 
 	return &client, nil
+}
+
+func loadEnvConfig(opts *Options) {
+	if opts.Domain == nil {
+		if v := os.Getenv("DATABRICKS_DOMAIN"); v != "" {
+			opts.Domain = &v
+		}
+	}
+
+	if opts.Token == nil {
+		if v := os.Getenv("DATABRICKS_TOKEN"); v != "" {
+			opts.Token = &v
+		}
+	}
 }
 
 func (c *Client) Query(method string, path string, data interface{}) ([]byte, error) {
