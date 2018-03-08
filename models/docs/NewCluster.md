@@ -1,0 +1,13 @@
+# NewCluster
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**NumWorkers** | **int32** |  | [optional] [default to null]
+**ClusterName** | **string** |  | [optional] [default to null]
+**SparkVersion** | **string** |  | [default to null]
+**NodeTypeId** | **string** |  | [default to null]
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+
