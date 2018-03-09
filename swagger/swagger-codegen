@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -jar swagger/swagger-codegen-cli.jar "$@"
