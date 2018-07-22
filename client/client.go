@@ -73,9 +73,12 @@ func (c *Client) Query(method string, path string, data interface{}) ([]byte, er
 
 	queryUrl := c.baseUrl.ResolveReference(u)
 
-	body, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
+	var body []byte = nil
+	if data != nil {
+		body, err = json.Marshal(data)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	request, err := http.NewRequest(method, queryUrl.String(), bytes.NewReader(body))
