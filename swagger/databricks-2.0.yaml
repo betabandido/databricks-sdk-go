@@ -62,6 +62,24 @@ definitions:
         format: byte
       overwrite:
         type: boolean
+  WorkspaceListRequest:
+    required:
+      - path
+    properties:
+      path:
+        type: string
+  WorkspaceListResponse:
+    properties:
+      objects:
+        type: array
+        items:
+          $ref: '#/definitions/WorkspaceObjectInfo'
+  WorkspaceMkdirsRequest:
+    required:
+      - path
+    properties:
+      path:
+        type: string
   # Data objects
   WorkspaceObjectType:
     type: string
@@ -97,6 +115,14 @@ definitions:
         $ref: '#/definitions/WorkspaceLanguage'
       object_type:
         $ref: '#/definitions/WorkspaceObjectType'
+  WorkspaceObjectInfo:
+    properties:
+      object_type:
+        $ref: '#/definitions/WorkspaceObjectType'
+      path:
+        type: string
+      language:
+        $ref: '#/definitions/WorkspaceLanguage'
   ### Jobs ###        
   JobSpec:
     properties:

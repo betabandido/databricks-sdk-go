@@ -9,10 +9,15 @@ import (
 	"github.com/betabandido/databricks-sdk-go/client"
 	"github.com/betabandido/databricks-sdk-go/models"
 	"io/ioutil"
+	"path"
 )
 
 func main() {
 	flag.Parse() // required to suppress warnings from glog
+
+	// TODO: use a better logging library
+	//flag.Lookup("logtostderr").Value.Set("true")
+	//flag.Lookup("stderrthreshold").Value.Set("INFO")
 
 	secrets := loadSecrets()
 
@@ -27,11 +32,26 @@ func main() {
 		Client: cl,
 	}
 
-	importNotebook(endpoint, secrets.NotebookPath)
+	mkdirs(endpoint, secrets.DirPath)
 
-	printNotebookStatus(endpoint, secrets.NotebookPath)
+	notebookPath := path.Join(secrets.DirPath, secrets.NotebookName)
 
-	deleteNotebook(endpoint, secrets.NotebookPath)
+	importNotebook(endpoint, notebookPath)
+	printNotebookStatus(endpoint, notebookPath)
+
+	listPath(endpoint, secrets.DirPath)
+
+	deletePath(endpoint, notebookPath)
+	deletePath(endpoint, secrets.DirPath)
+}
+
+func mkdirs(endpoint workspace.Endpoint, path string) {
+	err := endpoint.Mkdirs(&models.WorkspaceMkdirsRequest{
+		Path: path,
+	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func importNotebook(endpoint workspace.Endpoint, path string) {
@@ -59,7 +79,7 @@ func printNotebookStatus(endpoint workspace.Endpoint, path string) {
 	fmt.Printf("Language %s\n", *resp.Language)
 }
 
-func deleteNotebook(endpoint workspace.Endpoint, path string) {
+func deletePath(endpoint workspace.Endpoint, path string) {
 	err := endpoint.Delete(&models.WorkspaceDeleteRequest{
 		Path: path,
 	})
@@ -68,10 +88,24 @@ func deleteNotebook(endpoint workspace.Endpoint, path string) {
 	}
 }
 
+func listPath(endpoint workspace.Endpoint, path string) {
+	resp, err := endpoint.List(&models.WorkspaceListRequest{
+		Path: path,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	for _, obj := range resp.Objects {
+		fmt.Printf("path: %v, lang: %v, type: %v\n", obj.Path, *obj.Language, *obj.ObjectType)
+	}
+}
+
 type secrets struct {
 	Domain       string `json:"domain"`
 	Token        string `json:"token"`
-	NotebookPath string `json:"notebook_path"`
+	NotebookName string `json:"notebook_name"`
+	DirPath      string `json:"dir_path"`
 }
 
 func loadSecrets() *secrets {
