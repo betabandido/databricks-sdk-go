@@ -124,7 +124,49 @@ definitions:
       language:
         $ref: '#/definitions/WorkspaceLanguage'
   ### Clusters ###
+  # TODO: find the best way to support both AWS and Azure
   # Requests and responses
+  ClustersCreateRequest:
+    required:
+      - spark_version
+      - node_type_id
+    properties:
+      num_workers:
+        type: integer
+        format: int32
+      autoscale:
+        $ref: '#/definitions/ClustersAutoScale'
+      cluster_name:
+        type: string
+      spark_version:
+        type: string
+      spark_conf:
+        type: object
+        additionalProperties:
+          type: string
+      node_type_id:
+        type: string
+      driver_node_type_id:
+        type: string
+      custom_tags:
+        type: object
+        additionalProperties:
+          type: string
+      cluster_log_conf:
+        $ref: '#/definitions/ClustersClusterLogConf'
+      spark_env_vars:
+        type: object
+        additionalProperties:
+          type: string
+      autotermination_minutes:
+        type: integer
+        format: int32
+      enable_elastic_disk:
+        type: boolean
+  ClustersCreateResponse:
+    properties:
+      cluster_id:
+        type: string
   ClustersListResponse:
     properties:
       clusters:
@@ -133,7 +175,6 @@ definitions:
           $ref: '#/definitions/ClustersClusterInfo'
   # Data objects
   ClustersClusterInfo:
-    # TODO: find the best way to support both AWS and Azure
     properties:
       num_workers:
         type: integer

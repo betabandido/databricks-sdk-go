@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/betabandido/databricks-sdk-go/api/clusters"
 	"github.com/betabandido/databricks-sdk-go/client"
+	"github.com/betabandido/databricks-sdk-go/models"
 	"io/ioutil"
 )
 
@@ -29,7 +30,23 @@ func main() {
 		Client: cl,
 	}
 
+	createCluster(endpoint, secrets.ClusterName)
+
 	listClusters(endpoint)
+}
+
+func createCluster(endpoint clusters.Endpoint, clusterName string) {
+	resp, err := endpoint.Create(&models.ClustersCreateRequest{
+		ClusterName:  clusterName,
+		SparkVersion: "4.2.x-scala2.11",
+		NodeTypeId:   "Standard_D3_v2",
+		NumWorkers:   1,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Cluster %s created\n", resp.ClusterId)
 }
 
 func listClusters(endpoint clusters.Endpoint) {
@@ -45,10 +62,9 @@ func listClusters(endpoint clusters.Endpoint) {
 }
 
 type secrets struct {
-	Domain       string `json:"domain"`
-	Token        string `json:"token"`
-	NotebookName string `json:"notebook_name"`
-	DirPath      string `json:"dir_path"`
+	Domain      string `json:"domain"`
+	Token       string `json:"token"`
+	ClusterName string `json:"cluster_name"`
 }
 
 func loadSecrets() *secrets {
