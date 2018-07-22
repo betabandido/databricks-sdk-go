@@ -50,7 +50,6 @@ func (s *ClientTestSuite) TestQueryHandlesResponseErrors() {
 	gock.New("https://server.com").
 		Get("^/api/2.0/foo$").
 		Reply(500).
-		BodyString("a response").
 		JSON(map[string]string{
 			"error_code": "an error code",
 			"message":    "a message",
@@ -67,6 +66,21 @@ func (s *ClientTestSuite) TestQueryHandlesResponseErrors() {
 		"an error code", err.(Error).Code())
 	s.Assert().Equal(
 		"a message", err.(Error).Error())
+}
+
+func (s *ClientTestSuite) TestQueryHandlesNonJsonErrors() {
+	gock.New("https://server.com").
+		Get("^/api/2.0/foo$").
+		Reply(500).
+		BodyString("an error")
+
+	cl, err := NewClient(s.opts)
+	s.Require().NoError(err)
+
+	_, err = cl.Query("GET", "foo", nil)
+	s.Require().Error(err)
+
+	s.Assert().Equal("request error: an error", err.Error())
 }
 
 func (s *ClientTestSuite) TestQueryReturnsSuccessfulResponse() {
