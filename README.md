@@ -4,6 +4,7 @@
 
 databricks-sdk-go is an unofficial Databricks SDK for the Go programming language. It currently only supports a subset of the operations provided by the [Databricks REST API](https://docs.databricks.com/api/latest/index.html). At this point, there is only support for the following APIs:
 
+* Clusters API
 * Workspace API
 
 ## Installation
