@@ -167,6 +167,40 @@ definitions:
     properties:
       cluster_id:
         type: string
+  ClustersStartRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersRestartRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersDeleteRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersPermanentDeleteRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersGetRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersGetResponse:
+    allOf:
+      # TODO: this response is slightly different w.r.t. ClusterInfo
+      - $ref: '#/definitions/ClustersClusterInfo'
   ClustersListResponse:
     properties:
       clusters:

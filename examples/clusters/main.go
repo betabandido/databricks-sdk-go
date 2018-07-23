@@ -30,12 +30,15 @@ func main() {
 		Client: cl,
 	}
 
-	createCluster(endpoint, secrets.ClusterName)
+	clusterId := createCluster(endpoint, secrets.ClusterName)
+	printClusterInfo(endpoint, clusterId)
 
 	listClusters(endpoint)
+
+	permanentlyDeleteCluster(endpoint, clusterId)
 }
 
-func createCluster(endpoint clusters.Endpoint, clusterName string) {
+func createCluster(endpoint clusters.Endpoint, clusterName string) string {
 	resp, err := endpoint.Create(&models.ClustersCreateRequest{
 		ClusterName:  clusterName,
 		SparkVersion: "4.2.x-scala2.11",
@@ -47,6 +50,20 @@ func createCluster(endpoint clusters.Endpoint, clusterName string) {
 	}
 
 	fmt.Printf("Cluster %s created\n", resp.ClusterId)
+
+	return resp.ClusterId
+}
+
+func printClusterInfo(endpoint clusters.Endpoint, clusterId string) {
+	resp, err := endpoint.Get(&models.ClustersGetRequest{
+		ClusterId: clusterId,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("id: %s, name: %s, creator: %s, spark-version: %s, state: %s\n",
+		resp.ClusterId, resp.ClusterName, resp.CreatorUserName, resp.SparkVersion, *resp.State)
 }
 
 func listClusters(endpoint clusters.Endpoint) {
@@ -56,8 +73,17 @@ func listClusters(endpoint clusters.Endpoint) {
 	}
 
 	for _, c := range resp.Clusters {
-		fmt.Printf("id: %s, name: %s, creator: %s, spark-version: %s\n",
-			c.ClusterId, c.ClusterName, c.CreatorUserName, c.SparkVersion)
+		fmt.Printf("id: %s, name: %s, creator: %s, spark-version: %s, state: %s\n",
+			c.ClusterId, c.ClusterName, c.CreatorUserName, c.SparkVersion, *c.State)
+	}
+}
+
+func permanentlyDeleteCluster(endpoint clusters.Endpoint, clusterId string) {
+	err := endpoint.PermanentDelete(&models.ClustersPermanentDeleteRequest{
+		ClusterId: clusterId,
+	})
+	if err != nil {
+		panic(err)
 	}
 }
 
