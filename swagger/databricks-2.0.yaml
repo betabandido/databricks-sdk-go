@@ -123,7 +123,251 @@ definitions:
         type: string
       language:
         $ref: '#/definitions/WorkspaceLanguage'
-  ### Jobs ###        
+  ### Clusters ###
+  # TODO: find the best way to support both AWS and Azure
+  # Requests and responses
+  ClustersCreateRequest:
+    required:
+      - spark_version
+      - node_type_id
+    properties:
+      num_workers:
+        type: integer
+        format: int32
+      autoscale:
+        $ref: '#/definitions/ClustersAutoScale'
+      cluster_name:
+        type: string
+      spark_version:
+        type: string
+      spark_conf:
+        type: object
+        additionalProperties:
+          type: string
+      node_type_id:
+        type: string
+      driver_node_type_id:
+        type: string
+      custom_tags:
+        type: object
+        additionalProperties:
+          type: string
+      cluster_log_conf:
+        $ref: '#/definitions/ClustersClusterLogConf'
+      spark_env_vars:
+        type: object
+        additionalProperties:
+          type: string
+      autotermination_minutes:
+        type: integer
+        format: int32
+      enable_elastic_disk:
+        type: boolean
+  ClustersCreateResponse:
+    properties:
+      cluster_id:
+        type: string
+  ClustersStartRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersRestartRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersDeleteRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersPermanentDeleteRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersGetRequest:
+    required:
+      - cluster_id
+    properties:
+      cluster_id:
+        type: string
+  ClustersGetResponse:
+    allOf:
+      # TODO: this response is slightly different w.r.t. ClusterInfo
+      - $ref: '#/definitions/ClustersClusterInfo'
+  ClustersListResponse:
+    properties:
+      clusters:
+        type: array
+        items:
+          $ref: '#/definitions/ClustersClusterInfo'
+  # Data objects
+  ClustersClusterInfo:
+    properties:
+      num_workers:
+        type: integer
+        format: int32
+      autoscale:
+        $ref: '#/definitions/ClustersAutoScale'
+      cluster_id:
+        type: string
+      creator_user_name:
+        type: string
+      driver:
+        $ref: '#/definitions/ClustersSparkNode'
+      executors:
+        type: array
+        items:
+          $ref: '#/definitions/ClustersSparkNode'
+      spark_context_id:
+        type: integer
+        format: int64
+      jdbc_port:
+        type: integer
+        format: int32
+      cluster_name:
+        type: string
+      spark_version:
+        type: string
+      spark_conf:
+        type: object
+        additionalProperties:
+          type: string
+      node_type_id:
+        type: string
+      driver_node_type_id:
+        type: string
+      cluster_log_conf:
+        $ref: '#/definitions/ClustersClusterLogConf'
+      spark_env_vars:
+        type: object
+        additionalProperties:
+          type: string
+      autotermination_minutes:
+        type: integer
+        format: int32
+      state:
+        $ref: '#/definitions/ClustersClusterState'
+      state_message:
+        type: string
+      start_time:
+        type: integer
+        format: int64
+      terminated_time:
+        type: integer
+        format: int64
+      last_state_loss_time:
+        type: integer
+        format: int64
+      last_activity_time:
+        type: integer
+        format: int64
+      cluster_memory_mb:
+        type: integer
+        format: int64
+      cluster_cores:
+        type: number
+        format: float
+      default_tags:
+        type: object
+        additionalProperties:
+          type: string
+      cluster_log_status:
+        $ref: '#/definitions/ClustersLogSyncStatus'
+      termination_reason:
+        $ref: '#/definitions/ClustersTerminationReason'
+  ClustersAutoScale:
+    properties:
+      min_workers:
+        type: integer
+        format: int32
+      max_workers:
+        type: integer
+        format: int32
+  ClustersSparkNode:
+    properties:
+      private_ip:
+        type: string
+      public_dns:
+        type: string
+      node_id:
+        type: string
+      instance_id:
+        type: string
+      start_timestamp:
+        type: integer
+        format: int64
+      host_private_ip:
+        type: string
+  ClustersClusterLogConf:
+    properties:
+      dbfs:
+        $ref: '#/definitions/ClustersDbfsStorageInfo'
+  ClustersDbfsStorageInfo:
+    properties:
+      destination:
+        type: string
+  ClustersClusterState:
+    type: string
+    enum:
+      - PENDING
+      - RUNNING
+      - RESTARTING
+      - RESIZING
+      - TERMINATING
+      - TERMINATED
+      - ERROR
+      - UNKNOWN
+  ClustersLogSyncStatus:
+    properties:
+      last_attempted:
+        type: integer
+        format: int64
+      last_exception:
+        type: string
+  ClustersTerminationReason:
+    properties:
+      code:
+        $ref: '#/definitions/ClustersTerminationCode'
+      parameters:
+        type: object
+        properties:
+          username:
+            type: string
+          databricks_error_message:
+            type: string
+          inactivity_duration_min:
+            type: string
+          instance_id:
+            type: string
+          azure_error_code:
+            type: string
+          azure_error_message:
+            type: string
+        additionalProperties:
+          type: string
+  ClustersTerminationCode:
+    type: string
+    enum:
+      - USER_REQUEST
+      - JOB_FINISHED
+      - INACTIVITY
+      - CLOUD_PROVIDER_SHUTDOWN
+      - COMMUNICATION_LOST
+      - CLOUD_PROVIDER_LAUNCH_FAILURE
+      - SPARK_STARTUP_FAILURE
+      - INVALID_ARGUMENT
+      - UNEXPECTED_LAUNCH_FAILURE
+      - INTERNAL_ERROR
+      - INSTANCE_UNREACHABLE
+      - REQUEST_REJECTED
+  ### Jobs ###
   JobSpec:
     properties:
       name:
