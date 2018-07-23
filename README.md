@@ -37,6 +37,10 @@ if err != nil {
 Requests for a given API can be sent using the appropriate endpoint. For instance, the following example shows how to upload a notebook to the workspace.
 
 ```golang
+endpoint := workspace.Endpoint{
+    Client: cl,
+}
+
 language := models.PYTHON
 content := base64.StdEncoding.EncodeToString([]byte("print('hello world')"))
 
