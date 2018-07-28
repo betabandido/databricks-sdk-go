@@ -124,7 +124,6 @@ definitions:
       language:
         $ref: '#/definitions/WorkspaceLanguage'
   ### Clusters ###
-  # TODO: find the best way to support both AWS and Azure
   # Requests and responses
   ClustersCreateRequest:
     required:
@@ -144,10 +143,16 @@ definitions:
         type: object
         additionalProperties:
           type: string
+      aws_attributes:
+        $ref: '#/definitions/ClustersAwsAttributes'
       node_type_id:
         type: string
       driver_node_type_id:
         type: string
+      ssh_public_keys:
+        type: array
+        items:
+          type: string
       custom_tags:
         type: object
         additionalProperties:
@@ -290,6 +295,28 @@ definitions:
       max_workers:
         type: integer
         format: int32
+  ClustersAwsAttributes:
+    properties:
+      first_on_demand:
+        type: integer
+        format: int32
+      availability:
+        $ref: '#/definitions/ClustersAwsAvailability'
+      zone_id:
+        type: string
+      instance_profile_arn:
+        type: string
+      spot_bid_price_percent:
+        type: integer
+        format: int32
+      ebs_volume_type:
+        $ref: '#/definitions/ClustersEbsVolumeType'
+      ebs_volume_count:
+        type: integer
+        format: int32
+      ebs_volume_size:
+        type: integer
+        format: int32
   ClustersSparkNode:
     properties:
       private_ip:
@@ -367,6 +394,17 @@ definitions:
       - INTERNAL_ERROR
       - INSTANCE_UNREACHABLE
       - REQUEST_REJECTED
+  ClustersAwsAvailability:
+    type: string
+    enum:
+      - SPOT
+      - ON_DEMAND
+      - SPOT_WITH_FALLBACK
+  ClustersEbsVolumeType:
+    type: string
+    enum:
+      - GENERAL_PURPOSE_SSD
+      - THROUGHPUT_OPTIMIZED_HDD
   ### Jobs ###
   JobSpec:
     properties:
