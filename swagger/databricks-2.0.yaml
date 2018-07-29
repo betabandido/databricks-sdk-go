@@ -244,10 +244,20 @@ definitions:
         type: object
         additionalProperties:
           type: string
+      aws_attributes:
+        $ref: '#/definitions/ClustersAwsAttributes'
       node_type_id:
         type: string
       driver_node_type_id:
         type: string
+      ssh_public_keys:
+        type: array
+        items:
+          type: string
+      custom_tags:
+        type: object
+        additionalProperties:
+          type: string
       cluster_log_conf:
         $ref: '#/definitions/ClustersClusterLogConf'
       spark_env_vars:
@@ -257,6 +267,10 @@ definitions:
       autotermination_minutes:
         type: integer
         format: int32
+      enable_elastic_disk:
+        type: boolean
+      cluster_source:
+        $ref: '#/definitions/ClustersClusterSource'
       state:
         $ref: '#/definitions/ClustersClusterState'
       state_message:
@@ -340,6 +354,12 @@ definitions:
     properties:
       destination:
         type: string
+  ClustersClusterSource:
+    type: string
+    enum:
+      - UI
+      - JOB
+      - API
   ClustersClusterState:
     type: string
     enum:
