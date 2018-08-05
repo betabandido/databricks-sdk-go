@@ -172,6 +172,52 @@ definitions:
     properties:
       cluster_id:
         type: string
+  ClustersEditRequest:
+    required:
+      - cluster_id
+      - spark_version
+      - node_type_id
+    properties:
+      num_workers:
+        type: integer
+        format: int32
+      autoscale:
+        $ref: '#/definitions/ClustersAutoScale'
+      cluster_id:
+        type: string
+      cluster_name:
+        type: string
+      spark_version:
+        type: string
+      spark_conf:
+        type: object
+        additionalProperties:
+          type: string
+      aws_attributes:
+        $ref: '#/definitions/ClustersAwsAttributes'
+      node_type_id:
+        type: string
+      driver_node_type_id:
+        type: string
+      ssh_public_keys:
+        type: array
+        items:
+          type: string
+      custom_tags:
+        type: object
+        additionalProperties:
+          type: string
+      cluster_log_conf:
+        $ref: '#/definitions/ClustersClusterLogConf'
+      spark_env_vars:
+        type: object
+        additionalProperties:
+          type: string
+      autotermination_minutes:
+        type: integer
+        format: int32
+      enable_elastic_disk:
+        type: boolean
   ClustersStartRequest:
     required:
       - cluster_id

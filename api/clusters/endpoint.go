@@ -25,6 +25,11 @@ func (c *Endpoint) Create(request *models.ClustersCreateRequest) (*models.Cluste
 	return &resp, nil
 }
 
+func (c *Endpoint) Edit(request *models.ClustersEditRequest) error {
+	_, err := c.Client.Query("POST", "clusters/edit", request)
+	return err
+}
+
 func (c *Endpoint) Start(request *models.ClustersStartRequest) error {
 	_, err := c.Client.Query("POST", "clusters/start", request)
 	return err
