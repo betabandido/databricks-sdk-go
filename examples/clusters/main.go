@@ -8,7 +8,6 @@ import (
 	"github.com/betabandido/databricks-sdk-go/client"
 	"github.com/betabandido/databricks-sdk-go/models"
 	"io/ioutil"
-	"time"
 )
 
 const (
@@ -37,7 +36,6 @@ func main() {
 	}
 
 	clusterId := createCluster(endpoint, secrets.ClusterName)
-	waitForCluster(endpoint, clusterId)
 	printClusterInfo(endpoint, clusterId)
 
 	renameCluster(endpoint, clusterId, secrets.ClusterName+"-renamed")
@@ -49,7 +47,9 @@ func main() {
 }
 
 func createCluster(endpoint clusters.Endpoint, clusterName string) string {
-	resp, err := endpoint.Create(&models.ClustersCreateRequest{
+	fmt.Println("Creating cluster")
+
+	resp, err := endpoint.CreateSync(&models.ClustersCreateRequest{
 		ClusterName:  clusterName,
 		SparkVersion: SparkVersion,
 		NodeTypeId:   NodeTypeId,
@@ -64,28 +64,10 @@ func createCluster(endpoint clusters.Endpoint, clusterName string) string {
 	return resp.ClusterId
 }
 
-func waitForCluster(endpoint clusters.Endpoint, clusterId string) {
-	for {
-		resp, err := endpoint.Get(&models.ClustersGetRequest{
-			ClusterId: clusterId,
-		})
-		if err != nil {
-			panic(err)
-		}
-
-		if *resp.State == models.RUNNING {
-			break
-		} else if *resp.State != models.PENDING {
-			panic(fmt.Errorf("unexpected cluster state: %s", *resp.State))
-		}
-
-		fmt.Printf("Waiting for cluster %s\n", clusterId)
-		time.Sleep(5 * time.Second)
-	}
-}
-
 func renameCluster(endpoint clusters.Endpoint, clusterId string, name string) {
-	err := endpoint.Edit(&models.ClustersEditRequest{
+	fmt.Println("Renaming cluster")
+
+	err := endpoint.EditSync(&models.ClustersEditRequest{
 		ClusterId:    clusterId,
 		ClusterName:  name,
 		SparkVersion: SparkVersion,
