@@ -3,6 +3,8 @@ package client
 import (
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/h2non/gock.v1"
+	"net"
+	"net/url"
 	"os"
 	"testing"
 )
@@ -15,7 +17,7 @@ type ClientTestSuite struct {
 func (s *ClientTestSuite) SetupTest() {
 	domain := "server.com"
 	token := "a_token"
-	s.opts = Options{Domain: &domain, Token: &token}
+	s.opts = Options{Domain: &domain, Token: &token, MaxRetries: 0, RetryDelay: 0}
 }
 
 func (s *ClientTestSuite) TearDownTest() {
@@ -110,6 +112,125 @@ func (s *ClientTestSuite) TestAuthHeaderIsPresent() {
 	cl.Query("GET", "foo", nil)
 
 	s.Assert().True(gock.IsDone())
+}
+
+func (s *ClientTestSuite) TestQueryRetriesNetworkErrors() {
+	gock.New("https://server.com").
+		Get("^/api/2.0/foo$").
+		Times(3).
+		ReplyError(errorMock{temporary: true})
+
+	gock.New("https://server.com").
+		Get("^/api/2.0/foo$").
+		Reply(200).
+		BodyString("a response")
+
+	s.opts.MaxRetries = 3
+
+	cl, err := NewClient(s.opts)
+	s.Require().NoError(err)
+
+	_, err = cl.Query("GET", "foo", nil)
+	s.Require().NoError(err)
+}
+
+func (s *ClientTestSuite) TestQueryRetriesDatabrickErrors() {
+	gock.New("https://server.com").
+		Get("^/api/2.0/foo$").
+		Times(3).
+		Reply(500).
+		JSON(map[string]string{
+			"error_code": "an error code",
+			"message":    "a message",
+		})
+
+	gock.New("https://server.com").
+		Get("^/api/2.0/foo$").
+		Reply(200).
+		BodyString("a response")
+
+	s.opts.MaxRetries = 3
+
+	cl, err := NewClient(s.opts)
+	s.Require().NoError(err)
+
+	_, err = cl.Query("GET", "foo", nil)
+	s.Require().NoError(err)
+}
+
+func (s *ClientTestSuite) TestQueryDoesNotRetryPermanentErrors() {
+	gock.New("https://server.com").
+		Get("^/api/2.0/foo$").
+		ReplyError(&net.DNSError{})
+
+	s.opts.MaxRetries = 1
+
+	cl, err := NewClient(s.opts)
+	s.Require().NoError(err)
+
+	_, err = cl.Query("GET", "foo", nil)
+	s.Require().Error(err)
+
+	urlErr, ok := err.(*url.Error)
+	s.Require().True(ok)
+
+	s.Assert().IsType(&net.DNSError{}, urlErr.Err)
+}
+
+func (s *ClientTestSuite) TestQueryDoesNotRetryClientErrorsOrRedirects() {
+	errorCodes := []int{301, 302, 400, 401, 403, 404}
+	for _, code := range errorCodes {
+		resp := gock.New("https://server.com").
+			Get("^/api/2.0/foo$").
+			Reply(code).
+			BodyString("body")
+
+		if code >= 300 && code < 400 {
+			resp.AddHeader("Location", "none")
+		}
+
+		s.opts.MaxRetries = 1
+
+		cl, err := NewClient(s.opts)
+		s.Require().NoError(err)
+
+		_, err = cl.Query("GET", "foo", nil)
+		s.Require().Error(err)
+
+		databricksErr, ok := err.(Error)
+		s.Require().True(ok)
+
+		s.Assert().Equal(code, databricksErr.statusCode)
+	}
+}
+
+func (s *ClientTestSuite) TestQueryPropagatesErrorAfterMaxRetries() {
+	gock.New("https://server.com").
+		Get("^/api/2.0/foo$").
+		Times(4).
+		ReplyError(errorMock{temporary: true})
+
+	s.opts.MaxRetries = 3
+
+	cl, err := NewClient(s.opts)
+	s.Require().NoError(err)
+
+	_, err = cl.Query("GET", "foo", nil)
+	s.Require().Error(err)
+
+	s.Assert().Contains(err.Error(), "errorMock")
+}
+
+type errorMock struct {
+	temporary bool
+}
+
+func (e errorMock) Error() string {
+	return "errorMock"
+}
+
+func (e errorMock) Temporary() bool {
+	return e.temporary
 }
 
 func TestClientSuite(t *testing.T) {
