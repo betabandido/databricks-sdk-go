@@ -505,7 +505,84 @@ definitions:
         items:
           type: object
           additionalProperties:
-            type: string        
+            type: string
+  ### Groups ###
+  # Requests and responses
+  GroupsAddMemberRequest:
+    required:
+      - parent_name
+    properties:
+      user_name:
+        type: string
+      group_name:
+        type: string
+      parent_name:
+        type: string
+  GroupsCreateRequest:
+    required:
+      - group_name
+    properties:
+      group_name:
+        type: string
+  GroupsCreateResponse:
+    properties:
+      group_name:
+        type: string  
+  GroupsListMembersRequest:
+    required:
+      - group_name
+    properties:
+      group_name:
+        type: string
+  GroupsListMembersResponse:
+    properties:
+      members:
+        type: array
+        items:
+          $ref: '#/definitions/GroupsPrincipalName'
+  GroupsListResponse:
+    properties:
+      group_names:
+        type: array
+        items:
+          type: string
+  GroupsListParentsRequest:
+    properties:
+      user_name:
+        type: string
+      group_name:
+        type: string
+      parent_name:
+        type: string
+  GroupsListParentsResponse:
+    properties:
+      group_names:
+        type: array
+        items:
+          type: string
+  GroupsRemoveMemberRequest:
+    required:
+      - parent_name
+    properties:
+      user_name:
+        type: string
+      group_name:
+        type: string
+      parent_name:
+        type: string
+  GroupsDeleteRequest:
+    required:
+      - group_name
+    properties:
+      group_name:
+        type: string
+  # Data objects
+  GroupsPrincipalName:
+    properties:
+      group_name:
+        type: string
+      user_name:
+        type: string
   ### Errors ###
   ErrorResponse:
     required:
